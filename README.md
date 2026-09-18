@@ -30,6 +30,21 @@ Run the full local check sequence with:
 pnpm check
 ```
 
+To test the production PWA locally:
+
+```bash
+pnpm build
+pnpm vite preview
+```
+
+## PWA behavior
+
+The production build includes a standalone web app manifest, temporary PNG icons, and a Workbox-generated service worker. The service worker is disabled during normal Vite development so local work is not affected by stale caches.
+
+The development screen shows `Install App` only after the browser exposes its native `beforeinstallprompt` event. When the app is already running in standalone mode, it shows `Installed app` instead. Browsers that do not expose that event, including some Safari and Firefox contexts, will not show the button; those platforms may require their normal browser-specific “Add to Home Screen” flow.
+
+When a newer service-worker version is detected, the screen shows `Update available`. Updating is user-triggered and reloads only after choosing `Update now`; dismissing it leaves the current session running.
+
 ## Project boundaries
 
 - `src/app` contains the React entry point and UI.
