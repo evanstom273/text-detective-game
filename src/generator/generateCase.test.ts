@@ -5,7 +5,7 @@ import { causesOfDeath } from './data/murderCatalogue';
 import { russianPatronymics } from './data/namePools/russianPatronymics';
 
 function expectedFullName(victim: ReturnType<typeof generateCaseSlice>['victim']): string {
-  const personalNames = [victim.firstName, ...victim.middleNames].join(' ');
+  const personalNames = [victim.givenName, ...victim.middleNames].join(' ');
   return victim.nameOrder === 'family-given'
     ? `${victim.surname} ${personalNames}`
     : `${personalNames} ${victim.surname}`;
@@ -16,13 +16,13 @@ describe('country name catalogue', () => {
     expect(countries).toHaveLength(32);
 
     for (const country of countries) {
-      expect(country.firstNames.male, `${country.name} male names`).toHaveLength(50);
-      expect(country.firstNames.female, `${country.name} female names`).toHaveLength(50);
+      expect(country.givenNames.male, `${country.name} male names`).toHaveLength(50);
+      expect(country.givenNames.female, `${country.name} female names`).toHaveLength(50);
       expect(surnamesFor(country, 'male'), `${country.name} male surnames`).toHaveLength(100);
       expect(surnamesFor(country, 'female'), `${country.name} female surnames`).toHaveLength(100);
 
-      expect(new Set(country.firstNames.male.map(name => name.toLocaleLowerCase())).size).toBe(50);
-      expect(new Set(country.firstNames.female.map(name => name.toLocaleLowerCase())).size).toBe(50);
+      expect(new Set(country.givenNames.male.map(name => name.toLocaleLowerCase())).size).toBe(50);
+      expect(new Set(country.givenNames.female.map(name => name.toLocaleLowerCase())).size).toBe(50);
       expect(new Set(surnamesFor(country, 'male').map(name => name.toLocaleLowerCase())).size).toBe(100);
       expect(new Set(surnamesFor(country, 'female').map(name => name.toLocaleLowerCase())).size).toBe(100);
     }
@@ -62,7 +62,7 @@ describe('generateCaseSlice', () => {
       const victim = generateCaseSlice(`identity-stress-${index}`).victim;
       seenCountries.add(victim.countryId);
 
-      if (!victim.firstName || !victim.surname || !victim.fullName) {
+      if (!victim.givenName || !victim.surname || !victim.fullName) {
         throw new Error(`Empty name component for seed identity-stress-${index}`);
       }
       if (victim.fullName !== expectedFullName(victim)) {
@@ -117,7 +117,7 @@ describe('generateCaseSlice', () => {
         if (victim.middleNames.length !== 2 || victim.middleNameStyle !== 'egyptian-lineage') {
           throw new Error(`Egyptian lineage structure failed: ${victim.fullName}`);
         }
-        const components = [victim.firstName, ...victim.middleNames].map(name => name.toLocaleLowerCase());
+        const components = [victim.givenName, ...victim.middleNames].map(name => name.toLocaleLowerCase());
         if (new Set(components).size !== components.length) {
           throw new Error(`Repeated Egyptian lineage component: ${victim.fullName}`);
         }
@@ -128,7 +128,7 @@ describe('generateCaseSlice', () => {
         if (victim.middleNames.length !== 1 || victim.middleNameStyle !== 'kenyan-tribal') {
           throw new Error(`Kenyan middle/tribal-name structure failed: ${victim.fullName}`);
         }
-        if (victim.middleNames[0]?.localeCompare(victim.firstName, undefined, { sensitivity: 'base' }) === 0) {
+        if (victim.middleNames[0]?.localeCompare(victim.givenName, undefined, { sensitivity: 'base' }) === 0) {
           throw new Error(`Repeated Kenyan personal-name component: ${victim.fullName}`);
         }
       }
