@@ -11,6 +11,7 @@ import {
 import { russianPatronymics } from './data/namePools/russianPatronymics';
 import { choose, createSeededRandom, randomInteger } from './random';
 import { causesOfDeath } from './data/murderCatalogue';
+import { ageOnDate, generateDateOfBirth, generateDeathTime, type DeathTimeTruth } from './temporal';
 
 const continents: readonly Continent[] = [
   'north-america',
@@ -24,6 +25,7 @@ const genders: readonly Gender[] = ['male', 'female'];
 
 export interface VictimIdentity {
   readonly age: number;
+  readonly dateOfBirth: string;
   readonly gender: Gender;
   readonly continent: Continent;
   readonly continentName: string;
@@ -46,6 +48,7 @@ export interface MurderTruth {
   readonly method: string;
   readonly weaponOrInstrument: string;
   readonly location: string;
+  readonly timeOfDeath: DeathTimeTruth;
 }
 
 export interface GeneratedCaseSlice {
@@ -155,10 +158,20 @@ export function generateCaseSlice(seed: string): GeneratedCaseSlice {
   );
   const fullName = formatFullName(givenName, middleNames, surname, namingRules);
 
+  const temporalRandom = createSeededRandom(`${normalizedSeed}::death-time`);
+  const timeOfDeath = generateDeathTime(country.id, temporalRandom);
+  const birthRandom = createSeededRandom(`${normalizedSeed}::birth-date`);
+  const dateOfBirth = generateDateOfBirth(age, timeOfDeath.exact.localDate, birthRandom);
+  const derivedAge = ageOnDate(dateOfBirth, timeOfDeath.exact.localDate);
+  if (derivedAge !== age) {
+    throw new Error(`Generated date of birth does not match age at death for seed "${normalizedSeed}".`);
+  }
+
   return {
     seed: normalizedSeed,
     victim: {
-      age,
+      age: derivedAge,
+      dateOfBirth,
       gender,
       continent,
       continentName: continentNames[continent],
@@ -180,6 +193,7 @@ export function generateCaseSlice(seed: string): GeneratedCaseSlice {
       method: method.name,
       weaponOrInstrument: weaponOrInstrument.name,
       location,
+      timeOfDeath,
     },
     validation: { status: 'not-run', results: [] },
   };
