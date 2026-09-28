@@ -60,7 +60,11 @@ function dateOnlyMs(value: string): number {
   return Date.UTC(year, month - 1, day);
 }
 
-function partsAtInstant(instantMs: number, timeZone: string): CivilDateTimeParts {
+const formatterCache = new Map<string, Intl.DateTimeFormat>();
+
+function formatterFor(timeZone: string): Intl.DateTimeFormat {
+  const cached = formatterCache.get(timeZone);
+  if (cached) return cached;
   const formatter = new Intl.DateTimeFormat('en-CA', {
     timeZone,
     year: 'numeric',
@@ -70,6 +74,12 @@ function partsAtInstant(instantMs: number, timeZone: string): CivilDateTimeParts
     minute: '2-digit',
     hourCycle: 'h23',
   });
+  formatterCache.set(timeZone, formatter);
+  return formatter;
+}
+
+function partsAtInstant(instantMs: number, timeZone: string): CivilDateTimeParts {
+  const formatter = formatterFor(timeZone);
   const values = Object.fromEntries(
     formatter.formatToParts(new Date(instantMs))
       .filter(part => part.type !== 'literal')
