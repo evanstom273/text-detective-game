@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { App } from './App';
 
 describe('developer interface shell', () => {
-  it('renders empty case-generator sections without enabling generator controls', () => {
+  it('renders the current empty case-generator workbench', () => {
     render(<App />);
 
     expect(screen.getByText('Text Detective Game')).toBeInTheDocument();
@@ -21,6 +21,8 @@ describe('developer interface shell', () => {
       'Perpetrator',
       'Motive',
       'Method',
+      'Weapon / instrument',
+      'Murder location',
       'Timeline',
       'Evidence',
       'Other suspects',
@@ -30,16 +32,17 @@ describe('developer interface shell', () => {
       'Failed validation:',
     ]);
 
-    expect(screen.getByLabelText('Seed:')).toBeDisabled();
-    expect(screen.getByLabelText('Number of cases:')).toBeDisabled();
+    expect(screen.getByLabelText('Seed:')).toBeEnabled();
+    expect(screen.getByLabelText('Number of cases:')).toBeEnabled();
     expect(screen.getAllByRole('button', { name: 'Generate' })).toHaveLength(2);
-    expect(screen.getAllByRole('button', { name: 'Generate' }).every((button) => button.hasAttribute('disabled'))).toBe(true);
-    expect(screen.getByRole('button', { name: 'Random Seed' })).toBeDisabled();
-    expect(screen.getByRole('button', { name: 'Download All' })).toBeDisabled();
+    expect(screen.getAllByRole('button', { name: 'Generate' }).every((button) => !button.hasAttribute('disabled'))).toBe(true);
+    expect(screen.getByRole('button', { name: 'Random Seed' })).toBeEnabled();
+    expect(screen.getByRole('button', { name: 'Download JSON' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Download Markdown' })).toBeDisabled();
     expect(screen.getByRole('button', { name: 'Download Failures' })).toBeDisabled();
     expect(screen.getByText('Status:')).toBeInTheDocument();
     expect(screen.getByText('NOT RUN')).toBeInTheDocument();
-    expect(screen.getAllByText('Not run')).toHaveLength(11);
+    expect(screen.getAllByText('Not run')).toHaveLength(13);
     for (const check of [
       'Victim alive before fatal event',
       'Murder occurs within time-of-death window',

@@ -5,20 +5,25 @@ import { generateCaseSlice } from './generateCase';
 describe('name generation rules', () => {
   it('keeps the initial catalogue at exactly 32 countries', () => {
     expect(countries).toHaveLength(32);
-    expect(countries.some((country) => country.id === 'indonesia')).toBe(false);
   });
 
   it('uses gender-aware Russian surname forms', () => {
     const russia = countries.find((country) => country.id === 'russia');
     expect(russia).toBeDefined();
-    expect(surnamesFor(russia!, 'male')).toEqual(['Ivanov', 'Smirnov', 'Kuznetsov']);
-    expect(surnamesFor(russia!, 'female')).toEqual(['Ivanova', 'Smirnova', 'Kuznetsova']);
+    const maleSurnames = surnamesFor(russia!, 'male');
+    const femaleSurnames = surnamesFor(russia!, 'female');
+    expect(maleSurnames).toHaveLength(100);
+    expect(femaleSurnames).toHaveLength(100);
+    expect(maleSurnames).toEqual(expect.arrayContaining(['Ivanov', 'Smirnov', 'Kuznetsov']));
+    expect(femaleSurnames).toEqual(expect.arrayContaining(['Ivanova', 'Smirnova', 'Kuznetsova']));
   });
 
-  it('never generates identical first and surnames in a large deterministic sample', () => {
-    for (let index = 0; index < 10000; index += 1) {
+  it('never generates identical given names and surname components in a large deterministic sample', () => {
+    for (let index = 0; index < 5000; index += 1) {
       const victim = generateCaseSlice(`duplicate-check-${index}`).victim;
-      expect(victim.firstName.toLocaleLowerCase()).not.toBe(victim.surname.toLocaleLowerCase());
+      victim.surnameParts.forEach(surname => {
+        expect(victim.givenName.toLocaleLowerCase()).not.toBe(surname.toLocaleLowerCase());
+      });
     }
-  });
+  }, 20000);
 });

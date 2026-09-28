@@ -78,6 +78,22 @@ function bulkMarkdown(bulk: BulkGenerationResult) {
     '### Ages',
     ...bulk.statistics.ages.map(item => `- ${item.value}: ${item.count}`),
     '',
+    '### Given names',
+    ...bulk.statistics.givenNames.map(item => `- ${item.value}: ${item.count}`),
+    '',
+    '### Surnames',
+    ...bulk.statistics.surnames.map(item => `- ${item.value}: ${item.count}`),
+    '',
+    `### Multiple surnames: ${bulk.statistics.multipleSurnames}`,
+    '',
+    `### Hyphenated surnames: ${bulk.statistics.hyphenatedSurnames}`,
+    '',
+    '### Name orders',
+    ...bulk.statistics.nameOrders.map(item => `- ${item.value}: ${item.count}`),
+    '',
+    '### Middle-name styles',
+    ...bulk.statistics.middleNameStyles.map(item => `- ${item.value}: ${item.count}`),
+    '',
     '### Causes of death',
     ...bulk.statistics.causesOfDeath.map(item => `- ${item.value}: ${item.count}`),
     '',
@@ -180,7 +196,7 @@ export function DeveloperShell() {
         <div className="mt-5 flex flex-wrap gap-2"><button className="rounded-md border border-slate-700 px-3 py-2 text-sm disabled:opacity-50" disabled={!bulk} onClick={()=>bulk && downloadJson(`text-detective-cases_${exportTimestamp()}.json`, bulk)}>Download JSON</button><button className="rounded-md border border-slate-700 px-3 py-2 text-sm disabled:opacity-50" disabled={!bulk} onClick={()=>bulk && downloadText(`text-detective-cases_${exportTimestamp()}.md`, bulkMarkdown(bulk), 'text/markdown')}>Download Markdown</button><button className="rounded-md border border-slate-700 px-3 py-2 text-sm disabled:opacity-50" disabled={!bulk} onClick={()=>bulk && downloadJson(`text-detective-generation-failures_${exportTimestamp()}.json`, bulk.generationFailures)}>Download Failures</button></div>
       </DeveloperSection>
       <DeveloperSection heading="RAW UNDERLYING DATA" id="raw-underlying-data-heading">
-        {generated ? <dl><Row label="Seed" value={generated.seed}/><Row label="Continent" value={generated.victim.continentName}/><Row label="Country" value={generated.victim.countryName}/><Row label="Gender" value={generated.victim.gender}/><Row label="Age" value={String(generated.victim.age)}/><Row label="First name" value={generated.victim.firstName}/><Row label="Surname" value={generated.victim.surname}/><Row label="Cause of death" value={generated.murder.causeOfDeath}/><Row label="Method" value={generated.murder.method}/><Row label="Weapon / instrument" value={generated.murder.weaponOrInstrument}/><Row label="Murder location" value={generated.murder.location}/></dl> : <p className="text-sm text-slate-500">Nothing generated yet.</p>}
+        {generated ? <dl><Row label="Seed" value={generated.seed}/><Row label="Continent" value={generated.victim.continentName}/><Row label="Country" value={generated.victim.countryName}/><Row label="Gender" value={generated.victim.gender}/><Row label="Age" value={String(generated.victim.age)}/><Row label="Given name" value={generated.victim.givenName}/><Row label="Middle names" value={generated.victim.middleNames.length ? generated.victim.middleNames.join(' ') : 'None'}/><Row label="Surname" value={generated.victim.surname}/><Row label="Surname components" value={generated.victim.surnameParts.join(' | ')}/><Row label="Name order" value={generated.victim.nameOrder}/><Row label="Middle-name style" value={generated.victim.middleNameStyle}/><Row label="Multiple surnames" value={generated.victim.hasMultipleSurnames ? 'Yes' : 'No'}/><Row label="Hyphenated surname" value={generated.victim.hasHyphenatedSurname ? 'Yes' : 'No'}/><Row label="Cause of death" value={generated.murder.causeOfDeath}/><Row label="Method" value={generated.murder.method}/><Row label="Weapon / instrument" value={generated.murder.weaponOrInstrument}/><Row label="Murder location" value={generated.murder.location}/></dl> : <p className="text-sm text-slate-500">Nothing generated yet.</p>}
       </DeveloperSection>
     </main>
   </div>;
