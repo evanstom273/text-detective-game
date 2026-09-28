@@ -13,6 +13,15 @@ describe('generateCaseSlice', () => {
     expect(generated.victim.continentName.length).toBeGreaterThan(0);
   });
 
+  it('generates deterministic victim ages from 16 through 100 inclusive', () => {
+    for (let index = 0; index < 10000; index += 1) {
+      const victim = generateCaseSlice(`age-check-${index}`).victim;
+      expect(victim.age).toBeGreaterThanOrEqual(16);
+      expect(victim.age).toBeLessThanOrEqual(100);
+      expect(Number.isInteger(victim.age)).toBe(true);
+    }
+  });
+
   it('does not claim validation has run', () => {
     expect(generateCaseSlice('validation-test').validation.status).toBe('not-run');
   });
