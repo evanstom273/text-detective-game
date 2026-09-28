@@ -110,7 +110,7 @@ describe('generateCaseSlice', () => {
         }
       }
 
-      if (['mexico', 'colombia', 'chile', 'spain'].includes(victim.countryId)) {
+      if (['mexico', 'brazil', 'colombia', 'chile', 'spain', 'portugal'].includes(victim.countryId)) {
         if (victim.surnameParts.length !== 2 || victim.surnameSeparator !== ' ') {
           throw new Error(`Two-surname convention failed for ${victim.countryId}: ${victim.surname}`);
         }
