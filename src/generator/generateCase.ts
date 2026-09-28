@@ -89,6 +89,7 @@ function culturalMiddleNames(
   gender: Gender,
   firstName: string,
   maleGivenNames: readonly string[],
+  currentGenderGivenNames: readonly string[],
   random: () => number,
 ): readonly string[] {
   if (countryId === 'russia') {
@@ -105,7 +106,7 @@ function culturalMiddleNames(
   }
 
   if (countryId === 'kenya') {
-    return [chooseDifferent(maleGivenNames, [firstName], random)];
+    return [chooseDifferent(currentGenderGivenNames, [firstName], random)];
   }
 
   return [];
@@ -151,6 +152,7 @@ export function generateCaseSlice(seed: string): GeneratedCaseSlice {
     gender,
     firstName,
     country.firstNames.male,
+    country.firstNames[gender],
     namingRandom,
   );
   const fullName = formatFullName(firstName, middleNames, surname, namingRules);
