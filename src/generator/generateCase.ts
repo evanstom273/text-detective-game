@@ -5,7 +5,7 @@ import {
   type Continent,
   type Gender,
 } from './data/nameCatalogue';
-import { choose, createSeededRandom } from './random';
+import { choose, createSeededRandom, randomInteger } from './random';
 
 const continents: readonly Continent[] = [
   'north-america',
@@ -18,6 +18,7 @@ const continents: readonly Continent[] = [
 const genders: readonly Gender[] = ['male', 'female'];
 
 export interface VictimIdentity {
+  readonly age: number;
   readonly gender: Gender;
   readonly continent: Continent;
   readonly continentName: string;
@@ -57,10 +58,12 @@ export function generateCaseSlice(seed: string): GeneratedCaseSlice {
   const gender = choose(genders, random);
   const firstName = choose(country.firstNames[gender], random);
   const surname = chooseSurname(firstName, surnamesFor(country, gender), random);
+  const age = randomInteger(16, 100, random);
 
   return {
     seed: normalizedSeed,
     victim: {
+      age,
       gender,
       continent,
       continentName: continentNames[continent],
