@@ -62,7 +62,7 @@ export function DeveloperShell() {
   };
 
   const caseRows = [
-    ['Victim', generated?.victim.fullName ?? 'Not generated'],
+    ['Victim', generated ? `${generated.victim.fullName}, ${generated.victim.age}` : 'Not generated'],
     ['Cause of death', 'Not generated'], ['Time of death', 'Not generated'],
     ['Perpetrator', 'Not generated'], ['Motive', 'Not generated'], ['Method', 'Not generated'],
     ['Timeline', 'None generated'], ['Evidence', 'None generated'], ['Other suspects', 'None generated'],
@@ -94,7 +94,7 @@ export function DeveloperShell() {
         <div className="mt-5 flex flex-wrap gap-2"><button className="rounded-md border border-slate-700 px-3 py-2 text-sm disabled:opacity-50" disabled={!bulk} onClick={()=>bulk && downloadJson('text-detective-cases.json', bulk)}>Download All</button><button className="rounded-md border border-slate-700 px-3 py-2 text-sm disabled:opacity-50" disabled={!bulk} onClick={()=>bulk && downloadJson('text-detective-generation-failures.json', bulk.generationFailures)}>Download Failures</button></div>
       </DeveloperSection>
       <DeveloperSection heading="RAW UNDERLYING DATA" id="raw-underlying-data-heading">
-        {generated ? <dl><Row label="Seed" value={generated.seed}/><Row label="Continent" value={generated.victim.continentName}/><Row label="Country" value={generated.victim.countryName}/><Row label="Gender" value={generated.victim.gender}/><Row label="First name" value={generated.victim.firstName}/><Row label="Surname" value={generated.victim.surname}/></dl> : <p className="text-sm text-slate-500">Nothing generated yet.</p>}
+        {generated ? <dl><Row label="Seed" value={generated.seed}/><Row label="Continent" value={generated.victim.continentName}/><Row label="Country" value={generated.victim.countryName}/><Row label="Gender" value={generated.victim.gender}/><Row label="Age" value={String(generated.victim.age)}/><Row label="First name" value={generated.victim.firstName}/><Row label="Surname" value={generated.victim.surname}/></dl> : <p className="text-sm text-slate-500">Nothing generated yet.</p>}
       </DeveloperSection>
     </main>
   </div>;
