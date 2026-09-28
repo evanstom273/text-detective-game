@@ -31,9 +31,9 @@ describe('country name catalogue', () => {
   it('keeps country naming rules within valid structural ranges', () => {
     for (const country of countries) {
       const rules = namingRulesFor(country);
-      expect(rules.compoundSurnameChance).toBeGreaterThanOrEqual(0);
-      expect(rules.compoundSurnameChance).toBeLessThanOrEqual(1);
-      expect(rules.compoundSurnameSeparators.length).toBeGreaterThan(0);
+      expect(rules.multiSurnameChance).toBeGreaterThanOrEqual(0);
+      expect(rules.multiSurnameChance).toBeLessThanOrEqual(1);
+      expect(rules.multiSurnameSeparators.length).toBeGreaterThan(0);
     }
   });
 });
@@ -52,10 +52,11 @@ describe('generateCaseSlice', () => {
 
   it('stress-tests 100,000 generated identities for structural invariants', () => {
     const seenCountries = new Set<string>();
-    let sawCompoundSurname = false;
+    let sawMultipleSurname = false;
     let sawHyphenatedSurname = false;
     let sawRussianPatronymic = false;
     let sawEgyptianLineage = false;
+    let sawKenyanMiddleName = false;
 
     for (let index = 0; index < 100000; index += 1) {
       const victim = generateCaseSlice(`identity-stress-${index}`).victim;
@@ -73,13 +74,13 @@ describe('generateCaseSlice', () => {
         throw new Error(`Repeated surname component for seed identity-stress-${index}: ${victim.surname}`);
       }
 
-      if (victim.hasCompoundSurname) {
-        sawCompoundSurname = true;
+      if (victim.hasMultipleSurnames) {
+        sawMultipleSurname = true;
         if (victim.surnameParts.length !== 2 || victim.surnameSeparator === null) {
-          throw new Error(`Invalid compound surname for seed identity-stress-${index}: ${victim.surname}`);
+          throw new Error(`Invalid multiple surname for seed identity-stress-${index}: ${victim.surname}`);
         }
         if (victim.surname !== victim.surnameParts.join(victim.surnameSeparator)) {
-          throw new Error(`Compound surname does not match its components for seed identity-stress-${index}`);
+          throw new Error(`Multiple surname does not match its components for seed identity-stress-${index}`);
         }
       } else if (victim.surnameParts.length !== 1 || victim.surnameSeparator !== null) {
         throw new Error(`Invalid single surname structure for seed identity-stress-${index}: ${victim.surname}`);
@@ -121,13 +122,24 @@ describe('generateCaseSlice', () => {
           throw new Error(`Repeated Egyptian lineage component: ${victim.fullName}`);
         }
       }
+
+      if (victim.countryId === 'kenya') {
+        sawKenyanMiddleName = true;
+        if (victim.middleNames.length !== 1 || victim.middleNameStyle !== 'kenyan-tribal') {
+          throw new Error(`Kenyan middle/tribal-name structure failed: ${victim.fullName}`);
+        }
+        if (victim.middleNames[0]?.localeCompare(victim.firstName, undefined, { sensitivity: 'base' }) === 0) {
+          throw new Error(`Repeated Kenyan personal-name component: ${victim.fullName}`);
+        }
+      }
     }
 
     expect(seenCountries.size).toBe(32);
-    expect(sawCompoundSurname).toBe(true);
+    expect(sawMultipleSurname).toBe(true);
     expect(sawHyphenatedSurname).toBe(true);
     expect(sawRussianPatronymic).toBe(true);
     expect(sawEgyptianLineage).toBe(true);
+    expect(sawKenyanMiddleName).toBe(true);
   });
 
   it('uses gender-appropriate Russian patronymic forms', () => {
