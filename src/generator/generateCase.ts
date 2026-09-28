@@ -94,20 +94,20 @@ function culturalMiddleNames(
   random: () => number,
 ): readonly string[] {
   if (countryId === 'russia') {
-    const fatherName = chooseDifferent(maleGivenNames, [givenName], random);
+    const fatherName = chooseDistinct(maleGivenNames, [givenName], random);
     const forms = russianPatronymics[fatherName as keyof typeof russianPatronymics];
     if (!forms) throw new Error(`Missing Russian patronymic forms for "${fatherName}".`);
     return [forms[gender]];
   }
 
   if (countryId === 'egypt') {
-    const fatherName = chooseDifferent(maleGivenNames, [givenName], random);
-    const grandfatherName = chooseDifferent(maleGivenNames, [givenName, fatherName], random);
+    const fatherName = chooseDistinct(maleGivenNames, [givenName], random);
+    const grandfatherName = chooseDistinct(maleGivenNames, [givenName, fatherName], random);
     return [fatherName, grandfatherName];
   }
 
   if (countryId === 'kenya') {
-    return [chooseDifferent(currentGenderGivenNames, [givenName], random)];
+    return [chooseDistinct(currentGenderGivenNames, [givenName], random)];
   }
 
   return [];
