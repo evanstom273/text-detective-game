@@ -16,6 +16,10 @@ export interface BulkGenerationStatistics {
   readonly countriesByContinent: Readonly<Record<string, readonly CountStatistic[]>>;
   readonly genders: readonly CountStatistic[];
   readonly ages: readonly CountStatistic[];
+  readonly causesOfDeath: readonly CountStatistic[];
+  readonly methods: readonly CountStatistic[];
+  readonly weaponsOrInstruments: readonly CountStatistic[];
+  readonly murderLocations: readonly CountStatistic[];
 }
 
 export interface BulkGenerationResult {
@@ -44,6 +48,10 @@ function statisticsFor(cases: readonly GeneratedCaseSlice[]): BulkGenerationStat
     ])),
     genders: rankedCounts(cases.map(item => item.victim.gender)),
     ages: rankedCounts(cases.map(item => item.victim.age)),
+    causesOfDeath: rankedCounts(cases.map(item => item.murder.causeOfDeath)),
+    methods: rankedCounts(cases.map(item => item.murder.method)),
+    weaponsOrInstruments: rankedCounts(cases.map(item => item.murder.weaponOrInstrument)),
+    murderLocations: rankedCounts(cases.map(item => item.murder.location)),
   };
 }
 
