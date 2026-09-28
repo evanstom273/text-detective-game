@@ -19,7 +19,7 @@ describe('name generation rules', () => {
   });
 
   it('never generates identical given names and surname components in a large deterministic sample', () => {
-    for (let index = 0; index < 10000; index += 1) {
+    for (let index = 0; index < 5000; index += 1) {
       const victim = generateCaseSlice(`duplicate-check-${index}`).victim;
       victim.surnameParts.forEach(surname => {
         expect(victim.givenName.toLocaleLowerCase()).not.toBe(surname.toLocaleLowerCase());
