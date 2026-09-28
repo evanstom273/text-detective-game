@@ -26,6 +26,11 @@ export interface BulkGenerationStatistics {
   readonly methods: readonly CountStatistic[];
   readonly weaponsOrInstruments: readonly CountStatistic[];
   readonly murderLocations: readonly CountStatistic[];
+  readonly deathYears: readonly CountStatistic[];
+  readonly deathMonths: readonly CountStatistic[];
+  readonly deathHours: readonly CountStatistic[];
+  readonly timeZones: readonly CountStatistic[];
+  readonly timeOfDeathWindowWidths: readonly CountStatistic[];
 }
 
 export interface BulkGenerationResult {
@@ -64,6 +69,14 @@ function statisticsFor(cases: readonly GeneratedCaseSlice[]): BulkGenerationStat
     methods: rankedCounts(cases.map(item => item.murder.method)),
     weaponsOrInstruments: rankedCounts(cases.map(item => item.murder.weaponOrInstrument)),
     murderLocations: rankedCounts(cases.map(item => item.murder.location)),
+    deathYears: rankedCounts(cases.map(item => Number(item.murder.timeOfDeath.exact.localDate.slice(0, 4)))),
+    deathMonths: rankedCounts(cases.map(item => item.murder.timeOfDeath.exact.localDate.slice(0, 7))),
+    deathHours: rankedCounts(cases.map(item => Number(item.murder.timeOfDeath.exact.localTime.slice(0, 2)))),
+    timeZones: rankedCounts(cases.map(item => item.murder.timeOfDeath.timeZone)),
+    timeOfDeathWindowWidths: rankedCounts(cases.map(item =>
+      item.murder.timeOfDeath.estimatedWindow.beforeMinutes
+      + item.murder.timeOfDeath.estimatedWindow.afterMinutes
+    )),
   };
 }
 

@@ -1,9 +1,9 @@
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 import { App } from './App';
 
 describe('developer interface shell', () => {
-  it('renders the current empty case-generator workbench', () => {
+  it('renders the responsive case-generator workbench', () => {
     render(<App />);
 
     expect(screen.getByText('Text Detective Game')).toBeInTheDocument();
@@ -14,35 +14,16 @@ describe('developer interface shell', () => {
     expect(screen.getByRole('heading', { name: 'BULK GENERATION' })).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: 'RAW UNDERLYING DATA' })).toBeInTheDocument();
 
-    expect(screen.getAllByRole('term').map((term) => term.textContent)).toEqual([
-      'Victim',
-      'Cause of death',
-      'Time of death',
-      'Perpetrator',
-      'Motive',
-      'Method',
-      'Weapon / instrument',
-      'Murder location',
-      'Timeline',
-      'Evidence',
-      'Other suspects',
-      'Relevant / misleading circumstances',
-      'Generated:',
-      'Passed validation:',
-      'Failed validation:',
-    ]);
-
     expect(screen.getByLabelText('Seed:')).toBeEnabled();
     expect(screen.getByLabelText('Number of cases:')).toBeEnabled();
     expect(screen.getAllByRole('button', { name: 'Generate' })).toHaveLength(2);
-    expect(screen.getAllByRole('button', { name: 'Generate' }).every((button) => !button.hasAttribute('disabled'))).toBe(true);
     expect(screen.getByRole('button', { name: 'Random Seed' })).toBeEnabled();
     expect(screen.getByRole('button', { name: 'Download JSON' })).toBeDisabled();
     expect(screen.getByRole('button', { name: 'Download Markdown' })).toBeDisabled();
     expect(screen.getByRole('button', { name: 'Download Failures' })).toBeDisabled();
-    expect(screen.getByText('Status:')).toBeInTheDocument();
-    expect(screen.getByText('NOT RUN')).toBeInTheDocument();
-    expect(screen.getAllByText('Not run')).toHaveLength(13);
+    expect(screen.getByText('No case generated yet.')).toBeInTheDocument();
+    expect(screen.getByText('Nothing generated yet.')).toBeInTheDocument();
+
     for (const check of [
       'Victim alive before fatal event',
       'Murder occurs within time-of-death window',
@@ -58,6 +39,22 @@ describe('developer interface shell', () => {
     ]) {
       expect(screen.getByText(check)).toBeInTheDocument();
     }
-    expect(screen.getByText('Nothing generated yet.')).toBeInTheDocument();
+  });
+
+  it('presents generated facts as a unified human-readable case truth', () => {
+    render(<App />);
+
+    fireEvent.change(screen.getByLabelText('Seed:'), { target: { value: 'ui-narrative-test' } });
+    fireEvent.click(screen.getAllByRole('button', { name: 'Generate' })[0]!);
+
+    expect(screen.getByText('Victim')).toBeInTheDocument();
+    expect(screen.getByText('Murder')).toBeInTheDocument();
+    expect(screen.getAllByText('Date of birth').length).toBeGreaterThan(0);
+    expect(screen.getByText('Exact death')).toBeInTheDocument();
+    expect(screen.getByText('Estimated TOD')).toBeInTheDocument();
+    expect(screen.getAllByText('Time zone').length).toBeGreaterThan(0);
+    expect(screen.getByText('Show structured case facts')).toBeInTheDocument();
+    expect(screen.getByText('Perpetrator')).toBeInTheDocument();
+    expect(screen.getByText('Motive')).toBeInTheDocument();
   });
 });

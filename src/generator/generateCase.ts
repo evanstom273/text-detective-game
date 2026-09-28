@@ -9,8 +9,10 @@ import {
   type SurnameSeparator,
 } from './data/nameCatalogue';
 import { russianPatronymics } from './data/namePools/russianPatronymics';
+import type { NamePoolCountryId } from './data/namePools';
 import { choose, createSeededRandom, randomInteger } from './random';
 import { causesOfDeath } from './data/murderCatalogue';
+import { ageOnDate, generateDateOfBirth, generateDeathTime, type DeathTimeTruth } from './temporal';
 
 const continents: readonly Continent[] = [
   'north-america',
@@ -24,10 +26,11 @@ const genders: readonly Gender[] = ['male', 'female'];
 
 export interface VictimIdentity {
   readonly age: number;
+  readonly dateOfBirth: string;
   readonly gender: Gender;
   readonly continent: Continent;
   readonly continentName: string;
-  readonly countryId: string;
+  readonly countryId: NamePoolCountryId;
   readonly countryName: string;
   readonly givenName: string;
   readonly middleNames: readonly string[];
@@ -46,6 +49,7 @@ export interface MurderTruth {
   readonly method: string;
   readonly weaponOrInstrument: string;
   readonly location: string;
+  readonly timeOfDeath: DeathTimeTruth;
 }
 
 export interface GeneratedCaseSlice {
@@ -113,7 +117,12 @@ function culturalMiddleNames(
   return [];
 }
 
-export function generateCaseSlice(seed: string): GeneratedCaseSlice {
+export interface CaseGenerationOptions {
+  readonly earliestDeathDate?: string;
+  readonly latestDeathDate?: string;
+}
+
+export function generateCaseSlice(seed: string, options: CaseGenerationOptions = {}): GeneratedCaseSlice {
   const normalizedSeed = seed.trim();
   if (!normalizedSeed) throw new Error('A seed is required.');
 
@@ -155,10 +164,25 @@ export function generateCaseSlice(seed: string): GeneratedCaseSlice {
   );
   const fullName = formatFullName(givenName, middleNames, surname, namingRules);
 
+  const temporalRandom = createSeededRandom(`${normalizedSeed}::death-time`);
+  const timeOfDeath = generateDeathTime(
+    country.id,
+    temporalRandom,
+    options.earliestDeathDate,
+    options.latestDeathDate,
+  );
+  const birthRandom = createSeededRandom(`${normalizedSeed}::birth-date`);
+  const dateOfBirth = generateDateOfBirth(age, timeOfDeath.exact.localDate, birthRandom);
+  const derivedAge = ageOnDate(dateOfBirth, timeOfDeath.exact.localDate);
+  if (derivedAge !== age) {
+    throw new Error(`Generated date of birth does not match age at death for seed "${normalizedSeed}".`);
+  }
+
   return {
     seed: normalizedSeed,
     victim: {
-      age,
+      age: derivedAge,
+      dateOfBirth,
       gender,
       continent,
       continentName: continentNames[continent],
@@ -180,6 +204,7 @@ export function generateCaseSlice(seed: string): GeneratedCaseSlice {
       method: method.name,
       weaponOrInstrument: weaponOrInstrument.name,
       location,
+      timeOfDeath,
     },
     validation: { status: 'not-run', results: [] },
   };
