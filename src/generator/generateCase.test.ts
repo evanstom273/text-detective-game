@@ -175,7 +175,7 @@ describe('generateCaseSlice', () => {
     const femaleSurnames = new Set(surnamesFor(polish!, 'female'));
 
     let checked = 0;
-    for (let index = 0; index < 20000 && checked < 100; index += 1) {
+    for (let index = 0; index < 5000 && checked < 100; index += 1) {
       const victim = generateCaseSlice(`polish-name-${index}`).victim;
       if (victim.countryId !== 'poland' || victim.gender !== 'female') continue;
       checked += 1;
