@@ -118,18 +118,27 @@ export function generateCaseSlice(seed: string): GeneratedCaseSlice {
   const firstName = choose(country.firstNames[gender], random);
   const surnamePool = surnamesFor(country, gender);
   const firstSurname = chooseSurname(firstName, surnamePool, random);
-  const namingRules = namingRulesFor(country);
 
+  // Keep the original case RNG stream stable: extra naming complexity must not
+  // reshuffle age or murder facts merely because a culture needs more name parts.
+  const age = randomInteger(16, 100, random);
+  const cause = choose(causesOfDeath, random);
+  const method = choose(cause.methods, random);
+  const weaponOrInstrument = choose(method.instruments, random);
+  const location = choose(weaponOrInstrument.locations, random);
+
+  const namingRules = namingRulesFor(country);
+  const namingRandom = createSeededRandom(`${normalizedSeed}::name-structure`);
   const canCompound = namingRules.compoundSurnameChance > 0 && surnamePool.length > 1;
-  const hasCompoundSurname = canCompound && random() < namingRules.compoundSurnameChance;
+  const hasCompoundSurname = canCompound && namingRandom() < namingRules.compoundSurnameChance;
   const secondSurnamePool = eligibleSurnames(firstName, surnamePool).filter(
     surname => surname.localeCompare(firstSurname, undefined, { sensitivity: 'base' }) !== 0,
   );
   const surnameParts = hasCompoundSurname && secondSurnamePool.length > 0
-    ? [firstSurname, choose(secondSurnamePool, random)]
+    ? [firstSurname, choose(secondSurnamePool, namingRandom)]
     : [firstSurname];
   const surnameSeparator = surnameParts.length > 1
-    ? choose(namingRules.compoundSurnameSeparators, random)
+    ? choose(namingRules.compoundSurnameSeparators, namingRandom)
     : null;
   const surname = surnameParts.join(surnameSeparator ?? '');
 
@@ -138,15 +147,9 @@ export function generateCaseSlice(seed: string): GeneratedCaseSlice {
     gender,
     firstName,
     country.firstNames.male,
-    random,
+    namingRandom,
   );
   const fullName = formatFullName(firstName, middleNames, surname, namingRules);
-
-  const age = randomInteger(16, 100, random);
-  const cause = choose(causesOfDeath, random);
-  const method = choose(cause.methods, random);
-  const weaponOrInstrument = choose(method.instruments, random);
-  const location = choose(weaponOrInstrument.locations, random);
 
   return {
     seed: normalizedSeed,
