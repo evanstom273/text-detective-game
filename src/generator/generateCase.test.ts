@@ -46,7 +46,7 @@ describe('generateCaseSlice', () => {
   it('keeps downstream age and murder facts stable while naming data expands', () => {
     const generated = generateCaseSlice('77b5becf-b845-43f0-99bb-ab5690b08ac2');
     expect(generated.victim.age).toBe(92);
-    expect(generated.murder).toEqual({
+    expect(generated.murder).toMatchObject({
       causeOfDeath: 'Poisoning',
       method: 'Poisoned drink',
       weaponOrInstrument: 'Poisoned drink',
@@ -59,6 +59,8 @@ describe('generateCaseSlice', () => {
     expect(generated.victim.fullName).toBe(expectedFullName(generated.victim));
     expect(generated.victim.countryName.length).toBeGreaterThan(0);
     expect(generated.victim.continentName.length).toBeGreaterThan(0);
+    expect(generated.victim.dateOfBirth).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+    expect(generated.murder.timeOfDeath.timeZone.length).toBeGreaterThan(0);
   });
 
   it('stress-tests 100,000 generated identities for structural invariants', () => {
