@@ -36,8 +36,8 @@ export interface VictimIdentity {
   readonly surnameSeparator: SurnameSeparator | null;
   readonly fullName: string;
   readonly nameOrder: 'given-family' | 'family-given';
-  readonly middleNameStyle: 'none' | 'russian-patronymic' | 'egyptian-lineage';
-  readonly hasCompoundSurname: boolean;
+  readonly middleNameStyle: 'none' | 'russian-patronymic' | 'egyptian-lineage' | 'kenyan-tribal';
+  readonly hasMultipleSurnames: boolean;
   readonly hasHyphenatedSurname: boolean;
 }
 
@@ -104,6 +104,10 @@ function culturalMiddleNames(
     return [fatherName, grandfatherName];
   }
 
+  if (countryId === 'kenya') {
+    return [chooseDifferent(maleGivenNames, [firstName], random)];
+  }
+
   return [];
 }
 
@@ -129,16 +133,16 @@ export function generateCaseSlice(seed: string): GeneratedCaseSlice {
 
   const namingRules = namingRulesFor(country);
   const namingRandom = createSeededRandom(`${normalizedSeed}::name-structure`);
-  const canCompound = namingRules.compoundSurnameChance > 0 && surnamePool.length > 1;
-  const hasCompoundSurname = canCompound && namingRandom() < namingRules.compoundSurnameChance;
+  const canCompound = namingRules.multiSurnameChance > 0 && surnamePool.length > 1;
+  const hasMultipleSurnames = canCompound && namingRandom() < namingRules.multiSurnameChance;
   const secondSurnamePool = eligibleSurnames(firstName, surnamePool).filter(
     surname => surname.localeCompare(firstSurname, undefined, { sensitivity: 'base' }) !== 0,
   );
-  const surnameParts = hasCompoundSurname && secondSurnamePool.length > 0
+  const surnameParts = hasMultipleSurnames && secondSurnamePool.length > 0
     ? [firstSurname, choose(secondSurnamePool, namingRandom)]
     : [firstSurname];
   const surnameSeparator = surnameParts.length > 1
-    ? choose(namingRules.compoundSurnameSeparators, namingRandom)
+    ? choose(namingRules.multiSurnameSeparators, namingRandom)
     : null;
   const surname = surnameParts.join(surnameSeparator ?? '');
 
@@ -168,7 +172,7 @@ export function generateCaseSlice(seed: string): GeneratedCaseSlice {
       fullName,
       nameOrder: namingRules.order,
       middleNameStyle: namingRules.middleNameStyle,
-      hasCompoundSurname: surnameParts.length > 1,
+      hasMultipleSurnames: surnameParts.length > 1,
       hasHyphenatedSurname: surnameParts.length > 1 && surnameSeparator === '-',
     },
     murder: {
