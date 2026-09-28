@@ -43,6 +43,17 @@ describe('generateCaseSlice', () => {
     expect(generateCaseSlice('same-seed')).toEqual(generateCaseSlice('same-seed'));
   });
 
+  it('keeps downstream age and murder facts stable while naming data expands', () => {
+    const generated = generateCaseSlice('77b5becf-b845-43f0-99bb-ab5690b08ac2');
+    expect(generated.victim.age).toBe(92);
+    expect(generated.murder).toEqual({
+      causeOfDeath: 'Poisoning',
+      method: 'Poisoned drink',
+      weaponOrInstrument: 'Poisoned drink',
+      location: 'Restaurant',
+    });
+  });
+
   it('generates a complete victim identity from catalogue data', () => {
     const generated = generateCaseSlice('victim-test');
     expect(generated.victim.fullName).toBe(expectedFullName(generated.victim));
