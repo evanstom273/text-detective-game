@@ -6,7 +6,9 @@ import {
   formatFullName,
   type Continent,
   type Gender,
+  type SurnameSeparator,
 } from './data/nameCatalogue';
+import { russianPatronymics } from './data/namePools/russianPatronymics';
 import { choose, createSeededRandom, randomInteger } from './random';
 import { causesOfDeath } from './data/murderCatalogue';
 
@@ -28,10 +30,14 @@ export interface VictimIdentity {
   readonly countryId: string;
   readonly countryName: string;
   readonly firstName: string;
+  readonly middleNames: readonly string[];
   readonly surname: string;
   readonly surnameParts: readonly string[];
+  readonly surnameSeparator: SurnameSeparator | null;
   readonly fullName: string;
   readonly nameOrder: 'given-family' | 'family-given';
+  readonly middleNameStyle: 'none' | 'russian-patronymic' | 'egyptian-lineage';
+  readonly hasCompoundSurname: boolean;
   readonly hasHyphenatedSurname: boolean;
 }
 
@@ -54,7 +60,7 @@ export interface GeneratedCaseSlice {
 
 function eligibleSurnames(firstName: string, surnames: readonly string[]): readonly string[] {
   return surnames.filter(
-    (surname) => surname.localeCompare(firstName, undefined, { sensitivity: 'base' }) !== 0,
+    surname => surname.localeCompare(firstName, undefined, { sensitivity: 'base' }) !== 0,
   );
 }
 
@@ -64,6 +70,41 @@ function chooseSurname(firstName: string, surnames: readonly string[], random: (
     throw new Error(`No eligible surname remains for first name "${firstName}".`);
   }
   return choose(eligible, random);
+}
+
+function chooseDifferent(
+  values: readonly string[],
+  excluded: readonly string[],
+  random: () => number,
+): string {
+  const eligible = values.filter(value => !excluded.some(
+    item => item.localeCompare(value, undefined, { sensitivity: 'base' }) === 0,
+  ));
+  if (eligible.length === 0) throw new Error('No distinct name component remains.');
+  return choose(eligible, random);
+}
+
+function culturalMiddleNames(
+  countryId: string,
+  gender: Gender,
+  firstName: string,
+  maleGivenNames: readonly string[],
+  random: () => number,
+): readonly string[] {
+  if (countryId === 'russia') {
+    const fatherName = chooseDifferent(maleGivenNames, [firstName], random);
+    const forms = russianPatronymics[fatherName as keyof typeof russianPatronymics];
+    if (!forms) throw new Error(`Missing Russian patronymic forms for "${fatherName}".`);
+    return [forms[gender]];
+  }
+
+  if (countryId === 'egypt') {
+    const fatherName = chooseDifferent(maleGivenNames, [firstName], random);
+    const grandfatherName = chooseDifferent(maleGivenNames, [firstName, fatherName], random);
+    return [fatherName, grandfatherName];
+  }
+
+  return [];
 }
 
 export function generateCaseSlice(seed: string): GeneratedCaseSlice {
@@ -78,16 +119,29 @@ export function generateCaseSlice(seed: string): GeneratedCaseSlice {
   const surnamePool = surnamesFor(country, gender);
   const firstSurname = chooseSurname(firstName, surnamePool, random);
   const namingRules = namingRulesFor(country);
-  const canHyphenate = (namingRules.hyphenatedSurnameChance ?? 0) > 0 && surnamePool.length > 1;
-  const hasHyphenatedSurname = canHyphenate && random() < (namingRules.hyphenatedSurnameChance ?? 0);
+
+  const canCompound = namingRules.compoundSurnameChance > 0 && surnamePool.length > 1;
+  const hasCompoundSurname = canCompound && random() < namingRules.compoundSurnameChance;
   const secondSurnamePool = eligibleSurnames(firstName, surnamePool).filter(
     surname => surname.localeCompare(firstSurname, undefined, { sensitivity: 'base' }) !== 0,
   );
-  const surnameParts = hasHyphenatedSurname && secondSurnamePool.length > 0
+  const surnameParts = hasCompoundSurname && secondSurnamePool.length > 0
     ? [firstSurname, choose(secondSurnamePool, random)]
     : [firstSurname];
-  const surname = surnameParts.join('-');
-  const fullName = formatFullName(firstName, surname, namingRules);
+  const surnameSeparator = surnameParts.length > 1
+    ? choose(namingRules.compoundSurnameSeparators, random)
+    : null;
+  const surname = surnameParts.join(surnameSeparator ?? '');
+
+  const middleNames = culturalMiddleNames(
+    country.id,
+    gender,
+    firstName,
+    country.firstNames.male,
+    random,
+  );
+  const fullName = formatFullName(firstName, middleNames, surname, namingRules);
+
   const age = randomInteger(16, 100, random);
   const cause = choose(causesOfDeath, random);
   const method = choose(cause.methods, random);
@@ -104,11 +158,15 @@ export function generateCaseSlice(seed: string): GeneratedCaseSlice {
       countryId: country.id,
       countryName: country.name,
       firstName,
+      middleNames,
       surname,
       surnameParts,
+      surnameSeparator,
       fullName,
       nameOrder: namingRules.order,
-      hasHyphenatedSurname: surnameParts.length > 1,
+      middleNameStyle: namingRules.middleNameStyle,
+      hasCompoundSurname: surnameParts.length > 1,
+      hasHyphenatedSurname: surnameParts.length > 1 && surnameSeparator === '-',
     },
     murder: {
       causeOfDeath: cause.name,
