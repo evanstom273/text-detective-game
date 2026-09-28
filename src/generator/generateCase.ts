@@ -9,6 +9,7 @@ import {
   type SurnameSeparator,
 } from './data/nameCatalogue';
 import { russianPatronymics } from './data/namePools/russianPatronymics';
+import type { NamePoolCountryId } from './data/namePools';
 import { choose, createSeededRandom, randomInteger } from './random';
 import { causesOfDeath } from './data/murderCatalogue';
 import { ageOnDate, generateDateOfBirth, generateDeathTime, type DeathTimeTruth } from './temporal';
@@ -29,7 +30,7 @@ export interface VictimIdentity {
   readonly gender: Gender;
   readonly continent: Continent;
   readonly continentName: string;
-  readonly countryId: string;
+  readonly countryId: NamePoolCountryId;
   readonly countryName: string;
   readonly givenName: string;
   readonly middleNames: readonly string[];
@@ -116,7 +117,12 @@ function culturalMiddleNames(
   return [];
 }
 
-export function generateCaseSlice(seed: string): GeneratedCaseSlice {
+export interface CaseGenerationOptions {
+  readonly earliestDeathDate?: string;
+  readonly latestDeathDate?: string;
+}
+
+export function generateCaseSlice(seed: string, options: CaseGenerationOptions = {}): GeneratedCaseSlice {
   const normalizedSeed = seed.trim();
   if (!normalizedSeed) throw new Error('A seed is required.');
 
@@ -159,7 +165,12 @@ export function generateCaseSlice(seed: string): GeneratedCaseSlice {
   const fullName = formatFullName(givenName, middleNames, surname, namingRules);
 
   const temporalRandom = createSeededRandom(`${normalizedSeed}::death-time`);
-  const timeOfDeath = generateDeathTime(country.id, temporalRandom);
+  const timeOfDeath = generateDeathTime(
+    country.id,
+    temporalRandom,
+    options.earliestDeathDate,
+    options.latestDeathDate,
+  );
   const birthRandom = createSeededRandom(`${normalizedSeed}::birth-date`);
   const dateOfBirth = generateDateOfBirth(age, timeOfDeath.exact.localDate, birthRandom);
   const derivedAge = ageOnDate(dateOfBirth, timeOfDeath.exact.localDate);
