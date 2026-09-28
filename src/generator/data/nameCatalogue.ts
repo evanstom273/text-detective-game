@@ -16,12 +16,12 @@ export type SurnameData =
 
 export type NameOrder = 'given-family' | 'family-given';
 export type SurnameSeparator = ' ' | '-';
-export type MiddleNameStyle = 'none' | 'russian-patronymic' | 'egyptian-lineage';
+export type MiddleNameStyle = 'none' | 'russian-patronymic' | 'egyptian-lineage' | 'kenyan-tribal';
 
 export interface NamingRules {
   readonly order: NameOrder;
-  readonly compoundSurnameChance: number;
-  readonly compoundSurnameSeparators: readonly SurnameSeparator[];
+  readonly multiSurnameChance: number;
+  readonly multiSurnameSeparators: readonly SurnameSeparator[];
   readonly middleNameStyle: MiddleNameStyle;
 }
 
@@ -43,8 +43,8 @@ interface CountryDefinition {
 
 export const defaultNamingRules: NamingRules = {
   order: 'given-family',
-  compoundSurnameChance: 0,
-  compoundSurnameSeparators: ['-'],
+  multiSurnameChance: 0,
+  multiSurnameSeparators: ['-'],
   middleNameStyle: 'none',
 };
 
@@ -73,27 +73,27 @@ export const continentNames: Readonly<Record<Continent, string>> = {
   oceania: 'Oceania',
 };
 
-// Compound-surname chances are variety heuristics for the generator, not claims
-// about national population frequencies. Legal/cultural structure is encoded
-// separately from demographic weighting so the pools remain equal-choice.
+// Multi-surname chances are generator heuristics, not claims about national
+// population frequencies. A value of 1 is used where the researched naming
+// convention structurally expects two family-name components in V0.
 const countryDefinitions: readonly CountryDefinition[] = [
-  { id: 'united-states', name: 'United States', continent: 'north-america', naming: { compoundSurnameChance: 0.08, compoundSurnameSeparators: ['-'] } },
-  { id: 'canada', name: 'Canada', continent: 'north-america', naming: { compoundSurnameChance: 0.08, compoundSurnameSeparators: ['-'] } },
-  { id: 'mexico', name: 'Mexico', continent: 'north-america', naming: { compoundSurnameChance: 1, compoundSurnameSeparators: [' '] } },
+  { id: 'united-states', name: 'United States', continent: 'north-america', naming: { multiSurnameChance: 0.08, multiSurnameSeparators: ['-'] } },
+  { id: 'canada', name: 'Canada', continent: 'north-america', naming: { multiSurnameChance: 0.08, multiSurnameSeparators: ['-'] } },
+  { id: 'mexico', name: 'Mexico', continent: 'north-america', naming: { multiSurnameChance: 1, multiSurnameSeparators: [' '] } },
 
-  { id: 'brazil', name: 'Brazil', continent: 'south-america', naming: { compoundSurnameChance: 0.9, compoundSurnameSeparators: [' '] } },
-  { id: 'colombia', name: 'Colombia', continent: 'south-america', naming: { compoundSurnameChance: 1, compoundSurnameSeparators: [' '] } },
-  { id: 'argentina', name: 'Argentina', continent: 'south-america', naming: { compoundSurnameChance: 0.35, compoundSurnameSeparators: [' '] } },
-  { id: 'chile', name: 'Chile', continent: 'south-america', naming: { compoundSurnameChance: 1, compoundSurnameSeparators: [' '] } },
+  { id: 'brazil', name: 'Brazil', continent: 'south-america', naming: { multiSurnameChance: 1, multiSurnameSeparators: [' '] } },
+  { id: 'colombia', name: 'Colombia', continent: 'south-america', naming: { multiSurnameChance: 1, multiSurnameSeparators: [' '] } },
+  { id: 'argentina', name: 'Argentina', continent: 'south-america', naming: { multiSurnameChance: 0.35, multiSurnameSeparators: [' '] } },
+  { id: 'chile', name: 'Chile', continent: 'south-america', naming: { multiSurnameChance: 1, multiSurnameSeparators: [' '] } },
 
-  { id: 'united-kingdom', name: 'United Kingdom', continent: 'europe', naming: { compoundSurnameChance: 0.08, compoundSurnameSeparators: ['-'] } },
-  { id: 'ireland', name: 'Ireland', continent: 'europe', naming: { compoundSurnameChance: 0.08, compoundSurnameSeparators: ['-'] } },
-  { id: 'france', name: 'France', continent: 'europe', naming: { compoundSurnameChance: 0.12, compoundSurnameSeparators: [' ', '-'] } },
-  { id: 'germany', name: 'Germany', continent: 'europe', naming: { compoundSurnameChance: 0.08, compoundSurnameSeparators: ['-', ' '] } },
-  { id: 'italy', name: 'Italy', continent: 'europe', naming: { compoundSurnameChance: 0.2, compoundSurnameSeparators: [' '] } },
-  { id: 'poland', name: 'Poland', continent: 'europe', naming: { compoundSurnameChance: 0.1, compoundSurnameSeparators: ['-'] } },
-  { id: 'spain', name: 'Spain', continent: 'europe', naming: { compoundSurnameChance: 1, compoundSurnameSeparators: [' '] } },
-  { id: 'portugal', name: 'Portugal', continent: 'europe', naming: { compoundSurnameChance: 0.85, compoundSurnameSeparators: [' '] } },
+  { id: 'united-kingdom', name: 'United Kingdom', continent: 'europe', naming: { multiSurnameChance: 0.08, multiSurnameSeparators: ['-'] } },
+  { id: 'ireland', name: 'Ireland', continent: 'europe', naming: { multiSurnameChance: 0.08, multiSurnameSeparators: ['-'] } },
+  { id: 'france', name: 'France', continent: 'europe', naming: { multiSurnameChance: 0.12, multiSurnameSeparators: [' ', '-'] } },
+  { id: 'germany', name: 'Germany', continent: 'europe' },
+  { id: 'italy', name: 'Italy', continent: 'europe' },
+  { id: 'poland', name: 'Poland', continent: 'europe', naming: { multiSurnameChance: 0.1, multiSurnameSeparators: ['-'] } },
+  { id: 'spain', name: 'Spain', continent: 'europe', naming: { multiSurnameChance: 1, multiSurnameSeparators: [' '] } },
+  { id: 'portugal', name: 'Portugal', continent: 'europe', naming: { multiSurnameChance: 1, multiSurnameSeparators: [' '] } },
   { id: 'russia', name: 'Russia', continent: 'europe', naming: { middleNameStyle: 'russian-patronymic' } },
 
   { id: 'japan', name: 'Japan', continent: 'asia', naming: { order: 'family-given' } },
@@ -107,11 +107,11 @@ const countryDefinitions: readonly CountryDefinition[] = [
   { id: 'egypt', name: 'Egypt', continent: 'africa', naming: { middleNameStyle: 'egyptian-lineage' } },
   { id: 'south-africa', name: 'South Africa', continent: 'africa' },
   { id: 'ghana', name: 'Ghana', continent: 'africa' },
-  { id: 'kenya', name: 'Kenya', continent: 'africa' },
+  { id: 'kenya', name: 'Kenya', continent: 'africa', naming: { middleNameStyle: 'kenyan-tribal' } },
   { id: 'uganda', name: 'Uganda', continent: 'africa' },
 
-  { id: 'australia', name: 'Australia', continent: 'oceania', naming: { compoundSurnameChance: 0.08, compoundSurnameSeparators: ['-'] } },
-  { id: 'new-zealand', name: 'New Zealand', continent: 'oceania', naming: { compoundSurnameChance: 0.08, compoundSurnameSeparators: ['-'] } },
+  { id: 'australia', name: 'Australia', continent: 'oceania', naming: { multiSurnameChance: 0.08, multiSurnameSeparators: ['-'] } },
+  { id: 'new-zealand', name: 'New Zealand', continent: 'oceania', naming: { multiSurnameChance: 0.08, multiSurnameSeparators: ['-'] } },
   { id: 'samoa', name: 'Samoa', continent: 'oceania' },
   { id: 'papua-new-guinea', name: 'Papua New Guinea', continent: 'oceania' },
 ] as const;
