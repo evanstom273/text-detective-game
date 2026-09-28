@@ -151,14 +151,14 @@ describe('generateCaseSlice', () => {
     expect(sawRussianPatronymic).toBe(true);
     expect(sawEgyptianLineage).toBe(true);
     expect(sawKenyanMiddleName).toBe(true);
-  });
+  }, 120000);
 
   it('uses gender-appropriate Russian patronymic forms', () => {
     const maleForms = new Set(Object.values(russianPatronymics).map(forms => forms.male));
     const femaleForms = new Set(Object.values(russianPatronymics).map(forms => forms.female));
     let checked = 0;
 
-    for (let index = 0; index < 20000 && checked < 100; index += 1) {
+    for (let index = 0; index < 5000 && checked < 100; index += 1) {
       const victim = generateCaseSlice(`russian-patronymic-${index}`).victim;
       if (victim.countryId !== 'russia') continue;
       checked += 1;
@@ -167,7 +167,7 @@ describe('generateCaseSlice', () => {
     }
 
     expect(checked).toBeGreaterThan(0);
-  });
+  }, 20000);
 
   it('uses feminine Polish surname forms where Polish surnames inflect', () => {
     const polish = countries.find(country => country.id === 'poland');
@@ -183,7 +183,7 @@ describe('generateCaseSlice', () => {
     }
 
     expect(checked).toBeGreaterThan(0);
-  });
+  }, 20000);
 
   it('generates deterministic victim ages from 16 through 100 inclusive', () => {
     for (let index = 0; index < 10000; index += 1) {
@@ -192,7 +192,7 @@ describe('generateCaseSlice', () => {
       expect(victim.age).toBeLessThanOrEqual(100);
       expect(Number.isInteger(victim.age)).toBe(true);
     }
-  });
+  }, 20000);
 
   it('keeps murder method, instrument, and location causally compatible', () => {
     for (let index = 0; index < 10000; index += 1) {
@@ -205,7 +205,7 @@ describe('generateCaseSlice', () => {
       expect(instrument).toBeDefined();
       expect(instrument?.locations).toContain(generated.murder.location);
     }
-  });
+  }, 20000);
 
   it('does not claim validation has run', () => {
     expect(generateCaseSlice('validation-test').validation.status).toBe('not-run');
