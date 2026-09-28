@@ -67,7 +67,7 @@ function eligibleSurnames(givenName: string, surnames: readonly string[]): reado
 function chooseSurname(givenName: string, surnames: readonly string[], random: () => number): string {
   const eligible = eligibleSurnames(givenName, surnames);
   if (eligible.length === 0) {
-    throw new Error(`No eligible surname remains for first name "${givenName}".`);
+    throw new Error(`No eligible surname remains for given name "${givenName}".`);
   }
   return choose(eligible, random);
 }
