@@ -23,17 +23,18 @@ Current country-aware structures include:
 | --- | --- |
 | United States, Canada, United Kingdom, Ireland, Australia, New Zealand | Given name + surname, with a small seeded chance of a procedurally composed hyphenated surname |
 | Mexico, Colombia, Chile, Spain | Given name + two distinct surname components, rendered space-separated |
-| Brazil, Portugal | Given name + one or two surname components, with multi-surname names common in the generated catalogue |
+| Brazil, Portugal | Given name + two distinct surname components, rendered space-separated |
 | Argentina | Given name + one surname or two surname components |
-| France | Given name + surname; generated compound surnames may be space-separated or hyphenated |
-| Germany | Given name + surname; generated compound surnames may be hyphenated or space-separated |
-| Italy | Given name + one surname or two surname components |
+| France | Given name + surname; generated multiple surnames may be space-separated or hyphenated |
+| Germany | Given name + surname |
+| Italy | Given name + surname |
 | Poland | Given name + surname; gendered adjectival surname forms are stored separately, with a small chance of a hyphenated compound surname |
 | Russia | Given name + gender-appropriate patronymic + gender-appropriate surname |
 | Japan, South Korea, China | Family name first, followed by given name |
 | Egypt | Given name + father's given name + grandfather's given name + family surname |
 | India | Given name + surname in V0; the pool deliberately spans several naming communities rather than pretending India has one universal national naming system |
-| Nigeria, South Africa, Ghana, Kenya, Uganda | Given name + surname in V0; pools deliberately include multiple linguistic, regional and/or religious naming traditions |
+| Nigeria, South Africa, Ghana, Uganda | Given name + surname in V0; pools deliberately include multiple linguistic, regional and/or religious naming traditions |
+| Kenya | Given name + middle/tribal name + surname |
 | Thailand, Turkey, Samoa, Papua New Guinea | Given name + surname in V0 |
 
 ## Research approach
@@ -57,7 +58,7 @@ The catalogue is not intended to claim that nationality determines ethnicity, re
 
 ## Composition rules
 
-Compound surnames are generated from two distinct catalogue surname components. They are never stored as a finite list of preconstructed combinations unless the name itself is an established surname entry.
+Multiple surnames are generated from two distinct catalogue surname components. They are never stored as a finite list of preconstructed combinations unless the name itself is an established surname entry.
 
 This means a configured hyphenated-name country can generate, for example:
 
@@ -78,10 +79,11 @@ Tests enforce:
 - exactly 100 surname choices/forms per gender
 - no duplicate entries inside a pool
 - deterministic generation
-- distinct components in generated compound surnames
+- distinct components in generated multiple surnames
 - family-name-first rendering for Japan, South Korea and China
-- two-component surname structure for Mexico, Colombia, Chile and Spain
+- two-component surname structure for Mexico, Brazil, Colombia, Chile, Spain and Portugal
 - gender-appropriate Russian patronymics
 - Polish gendered surname forms
 - Egyptian father/grandfather lineage components
+- Kenyan middle/tribal-name components
 - a 100,000-identity structural stress run
