@@ -18,8 +18,10 @@ export interface BulkGenerationStatistics {
   readonly ages: readonly CountStatistic[];
   readonly givenNames: readonly CountStatistic[];
   readonly surnames: readonly CountStatistic[];
+  readonly compoundSurnames: number;
   readonly hyphenatedSurnames: number;
   readonly nameOrders: readonly CountStatistic[];
+  readonly middleNameStyles: readonly CountStatistic[];
   readonly causesOfDeath: readonly CountStatistic[];
   readonly methods: readonly CountStatistic[];
   readonly weaponsOrInstruments: readonly CountStatistic[];
@@ -54,8 +56,10 @@ function statisticsFor(cases: readonly GeneratedCaseSlice[]): BulkGenerationStat
     ages: rankedCounts(cases.map(item => item.victim.age)),
     givenNames: rankedCounts(cases.map(item => item.victim.firstName)),
     surnames: rankedCounts(cases.map(item => item.victim.surname)),
+    compoundSurnames: cases.filter(item => item.victim.hasCompoundSurname).length,
     hyphenatedSurnames: cases.filter(item => item.victim.hasHyphenatedSurname).length,
     nameOrders: rankedCounts(cases.map(item => item.victim.nameOrder)),
+    middleNameStyles: rankedCounts(cases.map(item => item.victim.middleNameStyle)),
     causesOfDeath: rankedCounts(cases.map(item => item.murder.causeOfDeath)),
     methods: rankedCounts(cases.map(item => item.murder.method)),
     weaponsOrInstruments: rankedCounts(cases.map(item => item.murder.weaponOrInstrument)),
