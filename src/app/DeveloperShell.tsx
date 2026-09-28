@@ -37,12 +37,75 @@ function exportTimestamp() {
   return `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}_${pad(now.getHours())}-${pad(now.getMinutes())}-${pad(now.getSeconds())}`;
 }
 
-function downloadJson(filename: string, value: unknown) {
-  const blob = new Blob([JSON.stringify(value, null, 2)], { type: 'application/json' });
+function downloadText(filename: string, content: string, type: string) {
+  const blob = new Blob([content], { type });
   const url = URL.createObjectURL(blob);
   const anchor = document.createElement('a');
   anchor.href = url; anchor.download = filename; anchor.click();
   URL.revokeObjectURL(url);
+}
+
+function downloadJson(filename: string, value: unknown) {
+  downloadText(filename, JSON.stringify(value, null, 2), 'application/json');
+}
+
+function bulkMarkdown(bulk: BulkGenerationResult) {
+  const lines = [
+    '# Text Detective Game — Bulk Generation Export',
+    '',
+    `Generated cases: ${bulk.cases.length}`,
+    `Requested cases: ${bulk.requested}`,
+    `Generation failures: ${bulk.generationFailures.length}`,
+    '',
+    '## Statistics',
+    '',
+    '### Continents',
+    ...bulk.statistics.continents.map(item => `- ${item.value}: ${item.count}`),
+    '',
+    '### Countries',
+    ...bulk.statistics.countries.map(item => `- ${item.value}: ${item.count}`),
+    '',
+    '### Countries by continent',
+    ...Object.entries(bulk.statistics.countriesByContinent).flatMap(([continent, items]) => [
+      '',
+      `#### ${continent}`,
+      ...items.map(item => `- ${item.value}: ${item.count}`),
+    ]),
+    '',
+    '### Genders',
+    ...bulk.statistics.genders.map(item => `- ${item.value}: ${item.count}`),
+    '',
+    '### Ages',
+    ...bulk.statistics.ages.map(item => `- ${item.value}: ${item.count}`),
+    '',
+    '---',
+    '',
+    '## Cases',
+    '',
+  ];
+
+  bulk.cases.forEach((item, index) => {
+    lines.push(
+      `### Case ${index + 1}`,
+      '',
+      `- Seed: \`${item.seed}\``,
+      `- Victim: ${item.victim.fullName}, ${item.victim.age}`,
+      `- Gender: ${item.victim.gender}`,
+      `- Continent: ${item.victim.continentName}`,
+      `- Country: ${item.victim.countryName}`,
+      `- Validation: ${item.validation.status}`,
+      '',
+    );
+  });
+
+  if (bulk.generationFailures.length) {
+    lines.push('---', '', '## Generation Failures', '');
+    bulk.generationFailures.forEach((failure, index) => {
+      lines.push(`### Failure ${index + 1}`, '', `- Seed: \`${failure.seed}\``, `- Error: ${failure.error}`, '');
+    });
+  }
+
+  return lines.join('\n');
 }
 
 export function DeveloperShell() {
@@ -97,7 +160,7 @@ export function DeveloperShell() {
       <DeveloperSection heading="BULK GENERATION" id="bulk-generation-heading">
         <div className="grid gap-3 sm:grid-cols-[10rem_minmax(0,1fr)_auto] sm:items-center"><label className="text-sm font-medium text-slate-300" htmlFor="case-count-input">Number of cases:</label><input id="case-count-input" className="min-w-0 rounded-md border border-slate-700 bg-slate-950 px-3 py-2 text-sm" type="number" min="1" max="100000" value={bulkCount} onChange={event=>setBulkCount(event.target.value)}/><button className="rounded-md border border-slate-700 px-3 py-2 text-sm" type="button" onClick={runBulk}>Generate</button></div>
         <dl className="mt-5 divide-y divide-slate-800/80 border-y border-slate-800/80"><Row label="Generated:" value={bulk ? String(bulk.cases.length) : 'Not generated'}/><Row label="Passed validation:" value="Not run"/><Row label="Failed validation:" value="Not run"/></dl>
-        <div className="mt-5 flex flex-wrap gap-2"><button className="rounded-md border border-slate-700 px-3 py-2 text-sm disabled:opacity-50" disabled={!bulk} onClick={()=>bulk && downloadJson(`text-detective-cases_${exportTimestamp()}.json`, bulk)}>Download All</button><button className="rounded-md border border-slate-700 px-3 py-2 text-sm disabled:opacity-50" disabled={!bulk} onClick={()=>bulk && downloadJson(`text-detective-generation-failures_${exportTimestamp()}.json`, bulk.generationFailures)}>Download Failures</button></div>
+        <div className="mt-5 flex flex-wrap gap-2"><button className="rounded-md border border-slate-700 px-3 py-2 text-sm disabled:opacity-50" disabled={!bulk} onClick={()=>bulk && downloadJson(`text-detective-cases_${exportTimestamp()}.json`, bulk)}>Download JSON</button><button className="rounded-md border border-slate-700 px-3 py-2 text-sm disabled:opacity-50" disabled={!bulk} onClick={()=>bulk && downloadText(`text-detective-cases_${exportTimestamp()}.md`, bulkMarkdown(bulk), 'text/markdown')}>Download Markdown</button><button className="rounded-md border border-slate-700 px-3 py-2 text-sm disabled:opacity-50" disabled={!bulk} onClick={()=>bulk && downloadJson(`text-detective-generation-failures_${exportTimestamp()}.json`, bulk.generationFailures)}>Download Failures</button></div>
       </DeveloperSection>
       <DeveloperSection heading="RAW UNDERLYING DATA" id="raw-underlying-data-heading">
         {generated ? <dl><Row label="Seed" value={generated.seed}/><Row label="Continent" value={generated.victim.continentName}/><Row label="Country" value={generated.victim.countryName}/><Row label="Gender" value={generated.victim.gender}/><Row label="Age" value={String(generated.victim.age)}/><Row label="First name" value={generated.victim.firstName}/><Row label="Surname" value={generated.victim.surname}/></dl> : <p className="text-sm text-slate-500">Nothing generated yet.</p>}
