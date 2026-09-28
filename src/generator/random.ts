@@ -23,6 +23,13 @@ export function choose<T>(items: readonly T[], random: () => number): T {
   return items[Math.floor(random() * items.length)]!;
 }
 
+export function randomInteger(min: number, max: number, random: () => number): number {
+  if (!Number.isInteger(min) || !Number.isInteger(max) || min > max) {
+    throw new Error('Random integer bounds must be integers with min <= max.');
+  }
+  return min + Math.floor(random() * (max - min + 1));
+}
+
 export function createRandomSeed(): string {
   if (typeof crypto !== 'undefined' && 'randomUUID' in crypto) return crypto.randomUUID();
   return `${Date.now()}-${Math.random().toString(36).slice(2)}`;
