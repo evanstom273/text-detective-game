@@ -1,6 +1,7 @@
 import {
   continentNames,
   countriesByContinent,
+  surnamesFor,
   type Continent,
   type Gender,
 } from './data/nameCatalogue';
@@ -36,6 +37,16 @@ export interface GeneratedCaseSlice {
   };
 }
 
+function chooseSurname(firstName: string, surnames: readonly string[], random: () => number): string {
+  const eligible = surnames.filter(
+    (surname) => surname.localeCompare(firstName, undefined, { sensitivity: 'base' }) !== 0,
+  );
+  if (eligible.length === 0) {
+    throw new Error(`No eligible surname remains for first name "${firstName}".`);
+  }
+  return choose(eligible, random);
+}
+
 export function generateCaseSlice(seed: string): GeneratedCaseSlice {
   const normalizedSeed = seed.trim();
   if (!normalizedSeed) throw new Error('A seed is required.');
@@ -45,7 +56,7 @@ export function generateCaseSlice(seed: string): GeneratedCaseSlice {
   const country = choose(countriesByContinent[continent], random);
   const gender = choose(genders, random);
   const firstName = choose(country.firstNames[gender], random);
-  const surname = choose(country.surnames, random);
+  const surname = chooseSurname(firstName, surnamesFor(country, gender), random);
 
   return {
     seed: normalizedSeed,
