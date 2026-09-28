@@ -29,7 +29,7 @@ export interface VictimIdentity {
   readonly continentName: string;
   readonly countryId: string;
   readonly countryName: string;
-  readonly firstName: string;
+  readonly givenName: string;
   readonly middleNames: readonly string[];
   readonly surname: string;
   readonly surnameParts: readonly string[];
@@ -58,16 +58,16 @@ export interface GeneratedCaseSlice {
   };
 }
 
-function eligibleSurnames(firstName: string, surnames: readonly string[]): readonly string[] {
+function eligibleSurnames(givenName: string, surnames: readonly string[]): readonly string[] {
   return surnames.filter(
-    surname => surname.localeCompare(firstName, undefined, { sensitivity: 'base' }) !== 0,
+    surname => surname.localeCompare(givenName, undefined, { sensitivity: 'base' }) !== 0,
   );
 }
 
-function chooseSurname(firstName: string, surnames: readonly string[], random: () => number): string {
-  const eligible = eligibleSurnames(firstName, surnames);
+function chooseSurname(givenName: string, surnames: readonly string[], random: () => number): string {
+  const eligible = eligibleSurnames(givenName, surnames);
   if (eligible.length === 0) {
-    throw new Error(`No eligible surname remains for first name "${firstName}".`);
+    throw new Error(`No eligible surname remains for first name "${givenName}".`);
   }
   return choose(eligible, random);
 }
@@ -87,26 +87,26 @@ function chooseDifferent(
 function culturalMiddleNames(
   countryId: string,
   gender: Gender,
-  firstName: string,
+  givenName: string,
   maleGivenNames: readonly string[],
   currentGenderGivenNames: readonly string[],
   random: () => number,
 ): readonly string[] {
   if (countryId === 'russia') {
-    const fatherName = chooseDifferent(maleGivenNames, [firstName], random);
+    const fatherName = chooseDifferent(maleGivenNames, [givenName], random);
     const forms = russianPatronymics[fatherName as keyof typeof russianPatronymics];
     if (!forms) throw new Error(`Missing Russian patronymic forms for "${fatherName}".`);
     return [forms[gender]];
   }
 
   if (countryId === 'egypt') {
-    const fatherName = chooseDifferent(maleGivenNames, [firstName], random);
-    const grandfatherName = chooseDifferent(maleGivenNames, [firstName, fatherName], random);
+    const fatherName = chooseDifferent(maleGivenNames, [givenName], random);
+    const grandfatherName = chooseDifferent(maleGivenNames, [givenName, fatherName], random);
     return [fatherName, grandfatherName];
   }
 
   if (countryId === 'kenya') {
-    return [chooseDifferent(currentGenderGivenNames, [firstName], random)];
+    return [chooseDifferent(currentGenderGivenNames, [givenName], random)];
   }
 
   return [];
@@ -120,9 +120,9 @@ export function generateCaseSlice(seed: string): GeneratedCaseSlice {
   const continent = choose(continents, random);
   const country = choose(countriesByContinent[continent], random);
   const gender = choose(genders, random);
-  const firstName = choose(country.firstNames[gender], random);
+  const givenName = choose(country.givenNames[gender], random);
   const surnamePool = surnamesFor(country, gender);
-  const firstSurname = chooseSurname(firstName, surnamePool, random);
+  const firstSurname = chooseSurname(givenName, surnamePool, random);
 
   // Keep the original case RNG stream stable: extra naming complexity must not
   // reshuffle age or murder facts merely because a culture needs more name parts.
@@ -136,7 +136,7 @@ export function generateCaseSlice(seed: string): GeneratedCaseSlice {
   const namingRandom = createSeededRandom(`${normalizedSeed}::name-structure`);
   const canCompound = namingRules.multiSurnameChance > 0 && surnamePool.length > 1;
   const hasMultipleSurnames = canCompound && namingRandom() < namingRules.multiSurnameChance;
-  const secondSurnamePool = eligibleSurnames(firstName, surnamePool).filter(
+  const secondSurnamePool = eligibleSurnames(givenName, surnamePool).filter(
     surname => surname.localeCompare(firstSurname, undefined, { sensitivity: 'base' }) !== 0,
   );
   const surnameParts = hasMultipleSurnames && secondSurnamePool.length > 0
@@ -150,12 +150,12 @@ export function generateCaseSlice(seed: string): GeneratedCaseSlice {
   const middleNames = culturalMiddleNames(
     country.id,
     gender,
-    firstName,
-    country.firstNames.male,
-    country.firstNames[gender],
+    givenName,
+    country.givenNames.male,
+    country.givenNames[gender],
     namingRandom,
   );
-  const fullName = formatFullName(firstName, middleNames, surname, namingRules);
+  const fullName = formatFullName(givenName, middleNames, surname, namingRules);
 
   return {
     seed: normalizedSeed,
@@ -166,7 +166,7 @@ export function generateCaseSlice(seed: string): GeneratedCaseSlice {
       continentName: continentNames[continent],
       countryId: country.id,
       countryName: country.name,
-      firstName,
+      givenName,
       middleNames,
       surname,
       surnameParts,
