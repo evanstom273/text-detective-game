@@ -52,9 +52,8 @@ export function DeveloperShell() {
   };
 
   const randomSeed = () => {
-    const next = createRandomSeed();
-    setSeed(next);
-    generate(next);
+    setSeed(createRandomSeed());
+    setError('');
   };
 
   const runBulk = () => {
