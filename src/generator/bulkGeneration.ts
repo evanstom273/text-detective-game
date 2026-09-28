@@ -54,7 +54,7 @@ function statisticsFor(cases: readonly GeneratedCaseSlice[]): BulkGenerationStat
     ])),
     genders: rankedCounts(cases.map(item => item.victim.gender)),
     ages: rankedCounts(cases.map(item => item.victim.age)),
-    givenNames: rankedCounts(cases.map(item => item.victim.firstName)),
+    givenNames: rankedCounts(cases.map(item => item.victim.givenName)),
     surnames: rankedCounts(cases.map(item => item.victim.surname)),
     multipleSurnames: cases.filter(item => item.victim.hasMultipleSurnames).length,
     hyphenatedSurnames: cases.filter(item => item.victim.hasHyphenatedSurname).length,
