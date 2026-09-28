@@ -42,7 +42,7 @@ describe('developer interface shell', () => {
     expect(screen.getByRole('button', { name: 'Download Failures' })).toBeDisabled();
     expect(screen.getByText('Status:')).toBeInTheDocument();
     expect(screen.getByText('NOT RUN')).toBeInTheDocument();
-    expect(screen.getAllByText('Not run')).toHaveLength(11);
+    expect(screen.getAllByText('Not run')).toHaveLength(13);
     for (const check of [
       'Victim alive before fatal event',
       'Murder occurs within time-of-death window',
