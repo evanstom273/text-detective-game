@@ -69,10 +69,16 @@ export const countries: readonly CountryNameData[] = [
   { id: 'papua-new-guinea', name: 'Papua New Guinea', continent: 'oceania', firstNames: { male: ['Kila', 'Tari', 'Wari'], female: ['Kuri', 'Meri', 'Lani'] }, surnames: ['Kidu', 'Somare', 'Temu'] },
 ] as const;
 
+function hasGenderedSurnames(
+  surnames: SurnameData,
+): surnames is Readonly<Record<Gender, readonly string[]>> {
+  return !Array.isArray(surnames);
+}
+
 export function surnamesFor(country: CountryNameData, gender: Gender): readonly string[] {
-  return Array.isArray(country.surnames)
-    ? country.surnames
-    : country.surnames[gender];
+  return hasGenderedSurnames(country.surnames)
+    ? country.surnames[gender]
+    : country.surnames;
 }
 
 export const countriesByContinent: Readonly<Record<Continent, readonly CountryNameData[]>> = {
