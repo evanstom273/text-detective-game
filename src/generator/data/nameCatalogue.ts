@@ -8,12 +8,16 @@ export type Continent =
   | 'africa'
   | 'oceania';
 
+export type SurnameData =
+  | readonly string[]
+  | Readonly<Record<Gender, readonly string[]>>;
+
 export interface CountryNameData {
   readonly id: string;
   readonly name: string;
   readonly continent: Continent;
   readonly firstNames: Readonly<Record<Gender, readonly string[]>>;
-  readonly surnames: readonly string[];
+  readonly surnames: SurnameData;
 }
 
 export const continentNames: Readonly<Record<Continent, string>> = {
@@ -43,7 +47,7 @@ export const countries: readonly CountryNameData[] = [
   { id: 'poland', name: 'Poland', continent: 'europe', firstNames: { male: ['Jakub', 'Jan', 'Piotr'], female: ['Zuzanna', 'Julia', 'Maja'] }, surnames: ['Nowak', 'Kowalski', 'Wiśniewski'] },
   { id: 'spain', name: 'Spain', continent: 'europe', firstNames: { male: ['Hugo', 'Mateo', 'Alejandro'], female: ['Lucía', 'Sofía', 'Martina'] }, surnames: ['García', 'Fernández', 'González'] },
   { id: 'portugal', name: 'Portugal', continent: 'europe', firstNames: { male: ['João', 'Tiago', 'Afonso'], female: ['Maria', 'Leonor', 'Beatriz'] }, surnames: ['Silva', 'Santos', 'Ferreira'] },
-  { id: 'russia', name: 'Russia', continent: 'europe', firstNames: { male: ['Aleksandr', 'Dmitri', 'Mikhail'], female: ['Anna', 'Sofia', 'Ekaterina'] }, surnames: ['Ivanov', 'Smirnov', 'Kuznetsov'] },
+  { id: 'russia', name: 'Russia', continent: 'europe', firstNames: { male: ['Aleksandr', 'Dmitri', 'Mikhail'], female: ['Anna', 'Sofia', 'Ekaterina'] }, surnames: { male: ['Ivanov', 'Smirnov', 'Kuznetsov'], female: ['Ivanova', 'Smirnova', 'Kuznetsova'] } },
 
   { id: 'japan', name: 'Japan', continent: 'asia', firstNames: { male: ['Haruto', 'Ren', 'Yuto'], female: ['Yui', 'Aoi', 'Hina'] }, surnames: ['Satō', 'Suzuki', 'Takahashi'] },
   { id: 'south-korea', name: 'South Korea', continent: 'asia', firstNames: { male: ['Min-jun', 'Seo-jun', 'Ji-ho'], female: ['Seo-yeon', 'Ji-woo', 'Ha-yoon'] }, surnames: ['Kim', 'Lee', 'Park'] },
@@ -51,7 +55,6 @@ export const countries: readonly CountryNameData[] = [
   { id: 'india', name: 'India', continent: 'asia', firstNames: { male: ['Arjun', 'Rahul', 'Vikram'], female: ['Ananya', 'Priya', 'Kavya'] }, surnames: ['Sharma', 'Patel', 'Singh'] },
   { id: 'thailand', name: 'Thailand', continent: 'asia', firstNames: { male: ['Anan', 'Niran', 'Kittisak'], female: ['Siriporn', 'Kanya', 'Pimchanok'] }, surnames: ['Saetang', 'Srisuk', 'Boonmee'] },
   { id: 'turkey', name: 'Turkey', continent: 'asia', firstNames: { male: ['Mehmet', 'Emre', 'Kerem'], female: ['Zeynep', 'Elif', 'Defne'] }, surnames: ['Yılmaz', 'Kaya', 'Demir'] },
-  { id: 'indonesia', name: 'Indonesia', continent: 'asia', firstNames: { male: ['Adi', 'Budi', 'Rizky'], female: ['Ayu', 'Siti', 'Putri'] }, surnames: ['Wijaya', 'Santoso', 'Pratama'] },
 
   { id: 'nigeria', name: 'Nigeria', continent: 'africa', firstNames: { male: ['Chinedu', 'Tunde', 'Emeka'], female: ['Adaeze', 'Ngozi', 'Yetunde'] }, surnames: ['Okafor', 'Adeyemi', 'Balogun'] },
   { id: 'egypt', name: 'Egypt', continent: 'africa', firstNames: { male: ['Ahmed', 'Omar', 'Youssef'], female: ['Mariam', 'Nour', 'Salma'] }, surnames: ['Hassan', 'Mahmoud', 'Ibrahim'] },
@@ -65,6 +68,12 @@ export const countries: readonly CountryNameData[] = [
   { id: 'samoa', name: 'Samoa', continent: 'oceania', firstNames: { male: ['Tavita', 'Sione', 'Malaki'], female: ['Litia', 'Mele', 'Sina'] }, surnames: ['Tuala', 'Fepulea’i', 'Leota'] },
   { id: 'papua-new-guinea', name: 'Papua New Guinea', continent: 'oceania', firstNames: { male: ['Kila', 'Tari', 'Wari'], female: ['Kuri', 'Meri', 'Lani'] }, surnames: ['Kidu', 'Somare', 'Temu'] },
 ] as const;
+
+export function surnamesFor(country: CountryNameData, gender: Gender): readonly string[] {
+  return Array.isArray(country.surnames)
+    ? country.surnames
+    : country.surnames[gender];
+}
 
 export const countriesByContinent: Readonly<Record<Continent, readonly CountryNameData[]>> = {
   'north-america': countries.filter((country) => country.continent === 'north-america'),
