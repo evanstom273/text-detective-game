@@ -6,6 +6,7 @@ import {
   type Gender,
 } from './data/nameCatalogue';
 import { choose, createSeededRandom, randomInteger } from './random';
+import { causesOfDeath } from './data/murderCatalogue';
 
 const continents: readonly Continent[] = [
   'north-america',
@@ -29,9 +30,17 @@ export interface VictimIdentity {
   readonly fullName: string;
 }
 
+export interface MurderTruth {
+  readonly causeOfDeath: string;
+  readonly method: string;
+  readonly weaponOrInstrument: string;
+  readonly location: string;
+}
+
 export interface GeneratedCaseSlice {
   readonly seed: string;
   readonly victim: VictimIdentity;
+  readonly murder: MurderTruth;
   readonly validation: {
     readonly status: 'not-run';
     readonly results: readonly [];
@@ -59,6 +68,10 @@ export function generateCaseSlice(seed: string): GeneratedCaseSlice {
   const firstName = choose(country.firstNames[gender], random);
   const surname = chooseSurname(firstName, surnamesFor(country, gender), random);
   const age = randomInteger(16, 100, random);
+  const cause = choose(causesOfDeath, random);
+  const method = choose(cause.methods, random);
+  const weaponOrInstrument = choose(method.instruments, random);
+  const location = choose(weaponOrInstrument.locations, random);
 
   return {
     seed: normalizedSeed,
@@ -72,6 +85,12 @@ export function generateCaseSlice(seed: string): GeneratedCaseSlice {
       firstName,
       surname,
       fullName: `${firstName} ${surname}`,
+    },
+    murder: {
+      causeOfDeath: cause.name,
+      method: method.name,
+      weaponOrInstrument: weaponOrInstrument.name,
+      location,
     },
     validation: { status: 'not-run', results: [] },
   };

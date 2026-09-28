@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { generateCaseSlice } from './generateCase';
+import { causesOfDeath } from './data/murderCatalogue';
 
 describe('generateCaseSlice', () => {
   it('is deterministic for the same seed', () => {
@@ -19,6 +20,19 @@ describe('generateCaseSlice', () => {
       expect(victim.age).toBeGreaterThanOrEqual(16);
       expect(victim.age).toBeLessThanOrEqual(100);
       expect(Number.isInteger(victim.age)).toBe(true);
+    }
+  });
+
+  it('keeps murder method, instrument, and location causally compatible', () => {
+    for (let index = 0; index < 10000; index += 1) {
+      const generated = generateCaseSlice(`murder-check-${index}`);
+      const cause = causesOfDeath.find(item => item.name === generated.murder.causeOfDeath);
+      const method = cause?.methods.find(item => item.name === generated.murder.method);
+      const instrument = method?.instruments.find(item => item.name === generated.murder.weaponOrInstrument);
+      expect(cause).toBeDefined();
+      expect(method).toBeDefined();
+      expect(instrument).toBeDefined();
+      expect(instrument?.locations).toContain(generated.murder.location);
     }
   });
 
