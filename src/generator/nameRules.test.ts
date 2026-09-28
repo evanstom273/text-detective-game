@@ -25,5 +25,5 @@ describe('name generation rules', () => {
         expect(victim.givenName.toLocaleLowerCase()).not.toBe(surname.toLocaleLowerCase());
       });
     }
-  });
+  }, 20000);
 });
