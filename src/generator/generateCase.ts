@@ -58,30 +58,31 @@ export interface GeneratedCaseSlice {
   };
 }
 
-function eligibleSurnames(givenName: string, surnames: readonly string[]): readonly string[] {
-  return surnames.filter(
-    surname => surname.localeCompare(givenName, undefined, { sensitivity: 'base' }) !== 0,
-  );
+function sameName(a: string, b: string): boolean {
+  return a.localeCompare(b, undefined, { sensitivity: 'base' }) === 0;
 }
 
-function chooseSurname(givenName: string, surnames: readonly string[], random: () => number): string {
-  const eligible = eligibleSurnames(givenName, surnames);
-  if (eligible.length === 0) {
-    throw new Error(`No eligible surname remains for given name "${givenName}".`);
-  }
-  return choose(eligible, random);
-}
-
-function chooseDifferent(
+function chooseDistinct(
   values: readonly string[],
   excluded: readonly string[],
   random: () => number,
 ): string {
-  const eligible = values.filter(value => !excluded.some(
-    item => item.localeCompare(value, undefined, { sensitivity: 'base' }) === 0,
-  ));
-  if (eligible.length === 0) throw new Error('No distinct name component remains.');
-  return choose(eligible, random);
+  if (values.length === 0) throw new Error('Cannot choose from an empty name collection.');
+
+  // Use exactly one RNG call, then scan only if that indexed value collides
+  // with an excluded component. This keeps seeded call counts stable without
+  // filtering a 100-entry pool for every generated identity.
+  const startIndex = Math.floor(random() * values.length);
+  for (let offset = 0; offset < values.length; offset += 1) {
+    const candidate = values[(startIndex + offset) % values.length]!;
+    if (!excluded.some(item => sameName(item, candidate))) return candidate;
+  }
+
+  throw new Error('No distinct name component remains.');
+}
+
+function chooseSurname(givenName: string, surnames: readonly string[], random: () => number): string {
+  return chooseDistinct(surnames, [givenName], random);
 }
 
 function culturalMiddleNames(
@@ -136,11 +137,8 @@ export function generateCaseSlice(seed: string): GeneratedCaseSlice {
   const namingRandom = createSeededRandom(`${normalizedSeed}::name-structure`);
   const canCompound = namingRules.multiSurnameChance > 0 && surnamePool.length > 1;
   const hasMultipleSurnames = canCompound && namingRandom() < namingRules.multiSurnameChance;
-  const secondSurnamePool = eligibleSurnames(givenName, surnamePool).filter(
-    surname => surname.localeCompare(firstSurname, undefined, { sensitivity: 'base' }) !== 0,
-  );
-  const surnameParts = hasMultipleSurnames && secondSurnamePool.length > 0
-    ? [firstSurname, choose(secondSurnamePool, namingRandom)]
+  const surnameParts = hasMultipleSurnames
+    ? [firstSurname, chooseDistinct(surnamePool, [givenName, firstSurname], namingRandom)]
     : [firstSurname];
   const surnameSeparator = surnameParts.length > 1
     ? choose(namingRules.multiSurnameSeparators, namingRandom)
