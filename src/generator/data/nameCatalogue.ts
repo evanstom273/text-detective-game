@@ -29,7 +29,7 @@ export interface CountryNameData {
   readonly id: NamePoolCountryId;
   readonly name: string;
   readonly continent: Continent;
-  readonly firstNames: Readonly<Record<Gender, readonly string[]>>;
+  readonly givenNames: Readonly<Record<Gender, readonly string[]>>;
   readonly surnames: SurnameData;
   readonly naming?: Partial<NamingRules>;
 }
@@ -120,7 +120,7 @@ export const countries: readonly CountryNameData[] = countryDefinitions.map(defi
   const pool = namePools[definition.id];
   return {
     ...definition,
-    firstNames: { male: pool.male, female: pool.female },
+    givenNames: { male: pool.male, female: pool.female },
     surnames: pool.surnames,
   };
 });
