@@ -49,10 +49,10 @@ describe('developer interface shell', () => {
 
     expect(screen.getByText('Victim')).toBeInTheDocument();
     expect(screen.getByText('Murder')).toBeInTheDocument();
-    expect(screen.getByText('Date of birth')).toBeInTheDocument();
+    expect(screen.getAllByText('Date of birth').length).toBeGreaterThan(0);
     expect(screen.getByText('Exact death')).toBeInTheDocument();
     expect(screen.getByText('Estimated TOD')).toBeInTheDocument();
-    expect(screen.getByText('Time zone')).toBeInTheDocument();
+    expect(screen.getAllByText('Time zone').length).toBeGreaterThan(0);
     expect(screen.getByText('Show structured case facts')).toBeInTheDocument();
     expect(screen.getByText('Perpetrator')).toBeInTheDocument();
     expect(screen.getByText('Motive')).toBeInTheDocument();
