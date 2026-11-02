@@ -1,6 +1,6 @@
 import type { GeneratedCaseSlice, MurderTruth } from './generateCase';
 
-const locationPhrases: Readonly<Record<string, string>> = {
+export const locationPhrases: Readonly<Record<string, string>> = {
   'Victim’s home': 'at their home',
   'Perpetrator’s home': 'at the perpetrator’s home',
   'Victim’s kitchen': 'in their kitchen',
@@ -30,6 +30,7 @@ const locationPhrases: Readonly<Record<string, string>> = {
   Pub: 'at a pub',
   Bar: 'at a bar',
   'Hotel room': 'in a hotel room',
+  'Hotel bathroom': 'in a hotel bathroom',
   Warehouse: 'in a warehouse',
   'Hotel lounge': 'in a hotel lounge',
   'Restaurant kitchen': 'in a restaurant kitchen',

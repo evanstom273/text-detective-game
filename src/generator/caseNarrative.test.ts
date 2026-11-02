@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { generateCaseSlice } from './generateCase';
-import { estimatedDeathWindowLabel, murderNarrative } from './caseNarrative';
+import { estimatedDeathWindowLabel, locationPhrases, murderNarrative } from './caseNarrative';
+import { causesOfDeath } from './data/murderCatalogue';
 
 describe('case narrative', () => {
   it('knits generated murder facts into one human-readable statement', () => {
@@ -11,6 +12,14 @@ describe('case narrative', () => {
     expect(narrative).toContain(generated.murder.timeOfDeath.exact.localTime);
     expect(narrative).not.toContain('None');
     expect(narrative.endsWith('.')).toBe(true);
+  });
+
+  it('has a readable phrase for every catalogue location', () => {
+    const locations = new Set(causesOfDeath.flatMap(cause =>
+      cause.methods.flatMap(method => method.instruments.flatMap(instrument => instrument.locations))));
+    const missing = [...locations].filter(location => !(location in locationPhrases));
+
+    expect(missing).toEqual([]);
   });
 
   it('formats the estimated time-of-death window without losing date rollover', () => {
